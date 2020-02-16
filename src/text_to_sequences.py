@@ -34,10 +34,10 @@ class TextToSequences:
         # Create look-up dictionaries and reverse look-ups
         word_idx = tokenizer.word_index
         self.idx_word = tokenizer.index_word
-        num_words = len(word_idx) + 1
+        unique_words_count = len(word_idx) + 1
         word_counts = tokenizer.word_counts
 
-        logging.info(f'There are {num_words} unique words.')
+        logging.info(f'There are {unique_words_count} unique words.')
 
         # Convert text to sequences of integers
         sequences = tokenizer.texts_to_sequences(self.texts)
@@ -72,7 +72,9 @@ class TextToSequences:
 
         # Return everything needed for setting up the model
         return word_idx, \
-               num_words, \
+               unique_words_count, \
                word_counts, \
                new_texts, \
-               new_sequences,
+               new_sequences, \
+               self.training_seq, \
+               self.labels

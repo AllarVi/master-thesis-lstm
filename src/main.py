@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from tensorflow.python.client import device_lib
 
@@ -7,6 +8,14 @@ from src.logging_config import LoggingConfig
 from src.patent_data_loader import PatentDataLoader
 from src.plots import Plots
 from src.text_to_sequences import TextToSequences
+from src.train_valid import TrainValid
+
+
+def check_sizes(gb_min=1):
+    for x in globals():
+        size = sys.getsizeof(eval(x)) / 1e9
+        if size > gb_min:
+            print(f'Object: {x:10}\tSize: {size} GB.')
 
 
 def main():
@@ -29,18 +38,32 @@ def main():
     text_to_sequences = TextToSequences(formatted)
 
     word_idx, \
-    num_words, \
+    unique_words_count, \
     word_counts, \
     abstracts, \
-    sequences = text_to_sequences.make_sequences(TRAINING_LENGTH,
-                                                 lower=True,
-                                                 filters=filters)
+    sequences, \
+    features, \
+    labels = text_to_sequences.make_sequences(TRAINING_LENGTH,
+                                              lower=True,
+                                              filters=filters)
 
     n = 3
 
     text_to_sequences.find_answer(n)
 
     logging.info(f"Most common words: {sorted(word_counts.items(), key=lambda x: x[1], reverse=True)[:15]}")
+
+    # Encoding of Labels
+    train_valid = TrainValid(features, labels)
+
+    X_train, X_valid, y_train, y_valid = train_valid.create_train_valid(unique_words_count)
+
+    logging.info(f"X_train shape: {X_train.shape}")
+    logging.info(f"y_train shape: {y_train.shape}")
+
+    logging.info(f"{sys.getsizeof(y_train) / 1e9}")
+
+    check_sizes(gb_min=1)
 
 
 if __name__ == '__main__':
