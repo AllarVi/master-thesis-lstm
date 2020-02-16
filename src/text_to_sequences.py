@@ -77,4 +77,5 @@ class TextToSequences:
                new_texts, \
                new_sequences, \
                self.training_seq, \
-               self.labels
+               self.labels, \
+               self.idx_word
