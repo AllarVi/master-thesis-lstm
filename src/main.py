@@ -1,8 +1,10 @@
 import logging
 import sys
 
+from keras.utils import plot_model
 from tensorflow.python.client import device_lib
 
+from src.build_model import make_word_level_model
 from src.data_cleaner import DataCleaner
 from src.glove_vectors import GloveVectors
 from src.logging_config import LoggingConfig
@@ -71,13 +73,28 @@ def main():
     vectors, words = GloveVectors.get_glove_vectors()
 
     word_lookup = WordLookup(unique_words_count, word_idx, idx_word)
-    word_lookup.get_word_lookup(words, vectors)
+    embedding_matrix = word_lookup.get_word_lookup(words, vectors)
 
     # word_lookup.find_closest("the")
     # word_lookup.find_closest("neural")
     # word_lookup.find_closest(".")
     # word_lookup.find_closest("wonder")
     # word_lookup.find_closest("dnn")
+
+    LSTM_CELLS = 64
+
+    model = make_word_level_model(
+        unique_words_count,
+        embedding_matrix=embedding_matrix,
+        lstm_cells=LSTM_CELLS,
+        trainable=False,
+        lstm_layers=1)
+    model.summary()
+
+    model_name = 'pre-trained-rnn'
+    model_dir = '../models/'
+
+    plot_model(model, to_file=f'{model_dir}{model_name}.png', show_shapes=True)
 
 
 if __name__ == '__main__':

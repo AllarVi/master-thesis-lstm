@@ -42,6 +42,8 @@ class WordLookup:
         embedding_matrix = embedding_matrix / np.linalg.norm(embedding_matrix, axis=1).reshape((-1, 1))
         self.embedding_matrix = np.nan_to_num(embedding_matrix)
 
+        return self.embedding_matrix
+
     def find_closest(self, query, n=10):
         """Find closest words to a query word in embeddings"""
 
