@@ -5,6 +5,7 @@ from keras.utils import plot_model
 from tensorflow.python.client import device_lib
 
 from src.build_model import make_word_level_model
+from src.callbacks import Callbacks
 from src.data_cleaner import DataCleaner
 from src.glove_vectors import GloveVectors
 from src.logging_config import LoggingConfig
@@ -12,7 +13,12 @@ from src.patent_data_loader import PatentDataLoader
 from src.plots import Plots
 from src.text_to_sequences import TextToSequences
 from src.train_valid import TrainValid
+from src.validation import Validation
 from src.word_lookup import WordLookup
+
+BATCH_SIZE = 2048
+EPOCHS = 150
+VERBOSE = 0
 
 
 def check_sizes(gb_min=1):
@@ -91,10 +97,24 @@ def main():
         lstm_layers=1)
     model.summary()
 
-    model_name = 'pre-trained-rnn'
-    model_dir = '../models/'
+    MODEL_NAME = 'pre-trained-rnn'
+    MODEL_DIR = '../models/'
 
-    plot_model(model, to_file=f'{model_dir}{model_name}.png', show_shapes=True)
+    plot_model(model, to_file=f'{MODEL_DIR}{MODEL_NAME}.png', show_shapes=True)
+
+    callbacks = Callbacks.make_callbacks(MODEL_NAME)
+
+    # Depending on your machine, this may take several hours to run.
+    history = model.fit(
+        X_train,
+        y_train,
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        verbose=VERBOSE,
+        callbacks=callbacks,
+        validation_data=(X_valid, y_valid))
+
+    model = Validation.load_and_evaluate(MODEL_NAME, return_model=True)
 
 
 if __name__ == '__main__':
