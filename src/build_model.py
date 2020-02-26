@@ -57,9 +57,10 @@ def make_word_level_model(unique_words_count,
                 return_sequences=False,
                 dropout=0.1,
                 recurrent_dropout=0.1))
+
     model.add(Dense(128, activation='relu'))
 
-    # Dropout for regularization
+    # Dropout for regularization (typically 0.3)
     model.add(Dropout(0.5))
 
     # Output layer

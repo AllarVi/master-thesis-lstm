@@ -18,7 +18,10 @@ from src.word_lookup import WordLookup
 
 BATCH_SIZE = 2048
 EPOCHS = 150
-VERBOSE = 0
+VERBOSE = 1
+LSTM_CELLS = 64
+MODEL_NAME = 'pre-trained-rnn'
+MODEL_DIR = '../models/'
 
 
 def check_sizes(gb_min=1):
@@ -72,7 +75,12 @@ def main():
     logging.info(f"X_train shape: {X_train.shape}")
     logging.info(f"y_train shape: {y_train.shape}")
 
-    logging.info(f"{sys.getsizeof(y_train) / 1e9}")
+    # 1e9 = 1000000000 (a billion)
+    # 1 MB = 1e6
+    # 1 GB = 1e9
+    # sys.getsizeof() returns size in bytes
+    # 1 byte = 8 bits, bits are either 0's or 1's
+    logging.info(f"Size of y_train in GB: {sys.getsizeof(y_train) / 1e9}")
 
     check_sizes(gb_min=1)
 
@@ -87,24 +95,25 @@ def main():
     # word_lookup.find_closest("wonder")
     # word_lookup.find_closest("dnn")
 
-    LSTM_CELLS = 64
-
     model = make_word_level_model(
         unique_words_count,
         embedding_matrix=embedding_matrix,
         lstm_cells=LSTM_CELLS,
         trainable=False,
         lstm_layers=1)
+
+    logging.info("Plotting model architecture to console")
     model.summary()
 
-    MODEL_NAME = 'pre-trained-rnn'
-    MODEL_DIR = '../models/'
-
+    logging.info(f"Saving model architecture to file {MODEL_DIR}{MODEL_NAME}.png")
     plot_model(model, to_file=f'{MODEL_DIR}{MODEL_NAME}.png', show_shapes=True)
 
     callbacks = Callbacks.make_callbacks(MODEL_NAME)
 
     # Depending on your machine, this may take several hours to run.
+
+    logging.info("Starting training...")
+
     history = model.fit(
         X_train,
         y_train,
@@ -114,6 +123,7 @@ def main():
         callbacks=callbacks,
         validation_data=(X_valid, y_valid))
 
+    logging.info("Model loading and validation")
     model = Validation.load_and_evaluate(MODEL_NAME, return_model=True)
 
 
